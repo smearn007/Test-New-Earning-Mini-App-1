@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mini Earning App</title>
+    <!-- Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Adsgram SDK -->
+    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+    <!-- NEW: Onclicka/tma.js SDK -->
+    <script src="https://js.onclckvd.com/in-stream-ad-admanager/tma.js"></script>
+    <!-- FontAwesome & Google Fonts -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="user-top-row">
+            <div class="user-badge"><i class="fas fa-user"></i> <span id="username">Guest</span></div>
+            <div class="user-badge">ID: <span id="uidDisplay">...</span></div>
+        </div>
+        <div class="balance-display">
+            <div style="font-size: 0.9rem; opacity: 0.8;">Total Balance</div>
+            <div class="balance-amount">
+                <i class="fas fa-coins" style="color: #ffd700;" id="mainCoinIcon"></i> 
+                <span id="balance"><div class="spinner"></div></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        
+        <!-- 1. HOME SECTION (Position: 1, Default Active) -->
+        <div id="home-section" class="page-section active-section">
+            <div class="section-title" id="homeSectionTitle">Daily Task</div> 
+            
+            <!-- Ad Navigation Tabs -->
+            <div class="ad-nav-tabs">
+                <div class="ad-nav-item active" id="tab-monetag" onclick="switchAdTab('monetag')">1. Ads Card</div>
+                <div class="ad-nav-item" id="tab-adsgram" onclick="switchAdTab('adsgram')">2. Ads Card</div>
+                <!-- NEW: Onclicka Tab -->
+                <div class="ad-nav-item" id="tab-onclicka" onclick="switchAdTab('onclicka')">3. Ads Card</div>
+            </div>
+
+            <!-- Card 1: Monetag -->
+            <div id="card-monetag" class="ad-card-container active">
+                <div class="card" id="adCard">
+                    <button class="history-btn" onclick="showAdsHistoryModal()"><i class="fas fa-history"></i> History</button> 
+                    <i class="fas fa-gift fa-3x" style="color: #764ba2; margin-bottom: 10px;"></i>
+                    <h3 id="adCardTitle" style="margin: 5px 0;">Watch Video Ads</h3> 
+                    <p id="adCardDesc" style="color: #777; font-size: 0.9rem; margin-top: 0;">Earn <span id="rewardAmountDisplay">...</span> Coins per ad</p>
+
+                    <div class="progress-wrapper">
+                        <div class="progress-info">
+                            <span>Daily Limit</span>
+                            <span><b id="adCount">0</b>/<span id="limitDisplay">...</span></span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-bar" id="dailyProgressBar"></div>
+                        </div>
+                    </div>
+
+                    <button class="watch-btn" id="watchAdBtn" onclick="startAdFlow()">
+                        Watch Ad Now <i class="fas fa-play-circle"></i>
+                    </button>
+                    <div id="completedMsg" style="display: none; color: #4caf50; font-weight: bold; margin-top: 10px;">
+                        <i class="fas fa-check-circle"></i> Daily Limit Completed!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Adsgram -->
+            <div id="card-adsgram" class="ad-card-container">
+                <div class="card" id="adsgramCard">
+                    <button class="history-btn" onclick="showAdsHistoryModal()"><i class="fas fa-history"></i> History</button> 
+                    <i class="fas fa-ad fa-3x" style="color: #764ba2; margin-bottom: 10px;"></i>
+                    <h3 id="adsgramCardTitle" style="margin: 5px 0;">Adsgram Task</h3> 
+                    <p id="adsgramCardDesc" style="color: #777; font-size: 0.9rem; margin-top: 0;">Earn <span id="adsgramRewardDisplay">...</span> Coins per ad</p>
+
+                    <div class="progress-wrapper">
+                        <div class="progress-info">
+                            <span>Daily Limit</span>
+                            <span><b id="adsgramCount">0</b>/<span id="adsgramLimitDisplay">...</span></span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-bar" id="adsgramProgressBar"></div>
+                        </div>
+                    </div>
+
+                    <button class="watch-btn" id="watchAdsgramBtn" onclick="startAdsgramFlow()">
+                        Watch Ad Now <i class="fas fa-play-circle"></i>
+                    </button>
+                    <div id="adsgramCompletedMsg" style="display: none; color: #4caf50; font-weight: bold; margin-top: 10px;">
+                        <i class="fas fa-check-circle"></i> Daily Limit Completed!
+                    </div>
+                </div>
+            </div>
+            
+            <!-- NEW Card 3: Onclicka -->
+            <div id="card-onclicka" class="ad-card-container">
+                <div class="card" id="onclickaCard">
+                    <button class="history-btn" onclick="showAdsHistoryModal()"><i class="fas fa-history"></i> History</button> 
+                    <i class="fas fa-desktop fa-3x" style="color: #667eea; margin-bottom: 10px;"></i>
+                    <h3 id="onclickaCardTitle" style="margin: 5px 0;">Onclicka Ad Task</h3> 
+                    <p id="onclickaCardDesc" style="color: #777; font-size: 0.9rem; margin-top: 0;">Earn <span id="onclickaRewardDisplay">...</span> Coins per ad</p>
+
+                    <div class="progress-wrapper">
+                        <div class="progress-info">
+                            <span>Daily Limit</span>
+                            <span><b id="onclickaCount">0</b>/<span id="onclickaLimitDisplay">...</span></span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-bar" id="onclickaProgressBar"></div>
+                        </div>
+                    </div>
+
+                    <button class="watch-btn" id="watchOnclickaBtn" onclick="startOnclickaFlow()">
+                        Watch Onclicka Ad <i class="fas fa-play-circle"></i>
+                    </button>
+                    <div id="onclickaCompletedMsg" style="display: none; color: #4caf50; font-weight: bold; margin-top: 10px;">
+                        <i class="fas fa-check-circle"></i> Daily Limit Completed!
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- 2. MISSIONS SECTION (Position: 2) -->
+        <div id="tasks-section" class="page-section">
+            <div id="dailyRewardCard" class="task-card" style="margin-top: 40px;">
+                <div class="task-left">
+                    <div class="task-icon" style="background: #e6e6fa; color: #764ba2;">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="task-info">
+                        <h4>Daily Check-in</h4>
+                        <p id="dailyRewardAmountDisplay">Reward: +100 Coins</p>
+                    </div>
+                </div>
+                <button id="dailyClaimBtn" class="task-btn btn-start" onclick="claimDailyReward()">Claim</button>
+            </div>
+
+            <div class="section-title" id="missionsSectionTitle">Social Missions</div>
+            <div id="taskListContainer">
+                <div style="text-align:center; padding: 40px; color: #999;">
+                    <div class="spinner spinner-dark"></div>
+                    <p style="margin-top:10px;">Loading Missions...</p>
+                </div>
+            </div>
+
+            <div class="section-title" id="completedMissionsTitle" style="display:none; margin-top: 30px;">Completed Missions</div>
+            <div id="completedListContainer"></div>
+        </div>
+
+        <!-- 3. LEADERBOARD SECTION (Position: 3) -->
+        <div id="topref-section" class="page-section">
+            <div class="section-title" id="toprefSectionTitle">Leaderboard</div>
+
+            <div class="card" id="leaderboardCard" style="text-align: left; margin-top: 10px; padding: 20px;">
+                
+                <!-- MODIFIED: Tournament UI Container (Positioned absolutely like .history-btn) -->
+                <div id="tournament-ui-container" style="display: none; position: absolute; top: 10px; right: 15px; z-index: 10; text-align: right; margin-top: 0px;">
+                    <!-- Tournament Button (Text changed to 'Tournament') -->
+                    <button class="tournament-btn" id="referralTournamentBtn" onclick="handleTournamentButtonClick()">
+                        <i class="fas fa-trophy"></i> Tournament
+                    </button>
+                    <!-- Timer below the button, small -->
+                    <div id="tournamentCountdown" style="font-size: 0.60rem; color: #764ba2; font-weight: 600; margin-top: 3px;">
+                        <i class="fas fa-clock"></i> <span id="tournamentTimerDisplay">...</span>
+                    </div>
+                </div>
+                <!-- END MODIFIED: Tournament UI Container -->
+
+                <!-- Original Card Header, shifted down by the new absolute element -->
+                <i class="fas fa-chart-bar fa-3x" style="color: #764ba2; margin-bottom: 15px; display: block; text-align: center;"></i>
+                <h2 id="leaderboardTitle" style="margin: 0 0 5px; text-align: center; color: #764ba2;">Top 100 Referrers (Lifetime)</h2>
+                <p id="leaderboardDesc" style="color: #666; font-size: 0.9rem; margin-bottom: 15px; text-align: center;">The list of the top 100 users with the most referrals. The list updates in real-time.</p>
+                <div id="topReferralListContainer">
+                    <div style="text-align:center; padding: 40px; color: #999;">
+                        <div class="spinner spinner-dark"></div>
+                        <p style="margin-top:10px;">Loading Leaderboard...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. INVITE SECTION (Position: 4) -->
+        <div id="invite-section" class="page-section">
+            <div class="section-title" id="inviteSectionTitle">Invite Friends</div>
+            
+            <div class="card">
+                <img src="https://cdn-icons-png.flaticon.com/512/1256/1256650.png" width="80" style="margin-bottom:15px;">
+                <h2 id="refTitle" style="margin: 0 0 10px;">Refer & Earn</h2>
+                <p id="refDesc" style="color: #666; font-size: 0.9rem;">Share link & get bonus!</p>
+                
+                <div class="ref-stats">
+                    <div class="ref-stat-item"> <h3 id="ref-count">0</h3> <p>Referrals</p> </div>
+                    <div class="ref-stat-item"> <h3 id="ref-earned">0</h3> <p>Earned</p> </div>
+                </div>
+
+                <div class="ref-link-box" id="refLink">Loading...</div>
+                <button class="btn-copy" onclick="copyLink(this)">Copy Link</button>
+            </div>
+
+            <div class="section-title" id="activeReferralsTitle" style="margin-top: 30px; display: none;">Your Referrals (Ads Progress)</div>
+            <div id="activeReferralListContainer">
+                <div style="text-align:center; padding: 40px; color: #999; display: none;" id="activeRefLoading">
+                    <div class="spinner spinner-dark"></div>
+                    <p style="margin-top:10px;">Loading Referrals...</p>
+                </div>
+            </div>
+            
+            <div id="activeReferralPagination" class="pagination" style="display: none;"></div>
+            <div class="section-title" id="completedReferralsTitle" style="margin-top: 30px; display:none;">Completed Referral Bonus (Claimed)</div>
+            <div id="completedReferralListContainer"></div>
+            <div id="completedReferralPagination" class="pagination" style="display: none;"></div>
+        </div>
+        
+        <!-- 5. WALLET SECTION (Position: 5) -->
+        <div id="wallet-section" class="page-section">
+            <div class="section-title" id="walletSectionTitle">My Wallet</div>
+            <div class="card">
+                <button class="history-btn" onclick="showHistoryModal('withdrawal')"><i class="fas fa-history"></i> History</button>
+                <i class="fas fa-wallet fa-3x" style="color: #764ba2; margin-bottom: 20px;"></i>
+                <h3 id="withdrawTitle">Withdraw Funds</h3>
+                <p style="color:#777; font-size:0.9rem;"><span id="withdrawDesc">Minimum Withdraw <strong>100</strong> coins</span></p> 
+                
+                <input type="number" id="withdrawAmount" class="wallet-input" placeholder="Enter Coin Amount">
+                <select id="withdrawMethod" class="select-field" onchange="toggleAccountInput()">
+                    <option value="" disabled selected>Select Payment Method</option>
+                </select>
+                <input type="number" id="accountNumber" class="wallet-input" placeholder="Enter Account Number" style="display: none;">
+                
+                <button class="watch-btn" id="requestWithdrawBtn" onclick="requestWithdraw()">Request Withdraw</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav (UPDATED WITH NEW ORDER) -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('home', this)"><i class="fas fa-home"></i> Home</div>
+        <div class="nav-item" onclick="switchTab('tasks', this)"><i class="fas fa-list-check"></i> Missions</div>
+        <div class="nav-item" onclick="switchTab('topref', this)"><i class="fas fa-chart-bar"></i> Leaderboard</div>
+        <div class="nav-item" onclick="switchTab('invite', this)"><i class="fas fa-user-plus"></i> Invite</div>
+        <div class="nav-item" onclick="switchTab('wallet', this)"><i class="fas fa-wallet"></i> Wallet</div>
+    </div>
+
+    <!-- Ad Overlay - REVERTED TO SIMPLE SPINNER -->
+    <div id="adOverlay" class="ad-overlay">
+        <div style="text-align:center;">
+            <!-- Simple Font Awesome Dotted Spinner -->
+            <i class="fas fa-circle-notch fa-spin fa-3x" style="margin-bottom:20px; color: white;"></i>
+            <h3>Loading Ad...</h3>
+            <p>Please wait while the ad loads.</p>
+        </div>
+    </div>
+    
+    <!-- INITIAL VERIFICATION MODAL -->
+    <div id="initialVerificationModal" class="modal-backdrop" style="z-index: 4000; display: none;">
+        <div class="reward-modal">
+            <div class="sparkle-bg"></div>
+            <div id="initialModalIconContainer"><i class="fas fa-robot" style="font-size:3rem; color:#764ba2; margin-bottom:15px;"></i></div>
+            <h2 class="reward-title" id="initialModalTitle">Welcome!</h2> 
+            <p class="reward-desc" id="initialModalDesc">To access, join our Telegram bot & send /start.</p> 
+            <button class="btn-claim-modal" id="joinBotBtn" onclick="handleVerificationButtonClick()" style="width: 80%;">Join Telegram Bot</button>
+            <p id="verificationTip" style="font-size: 0.75rem; color: #999; margin-top: 10px;">(Please join the bot and click Exit)</p>
+        </div>
+    </div>
+
+    <!-- REWARD MODAL -->
+    <div id="rewardModal" class="modal-backdrop">
+        <div class="reward-modal">
+            <div class="sparkle-bg"></div>
+            <div id="modalIconContainer"><img src="https://cdn-icons-png.flaticon.com/512/1292/1292744.png" class="reward-coin" id="defaultRewardIcon"></div>
+            <h2 class="reward-title">Congratulations!</h2> 
+            <div class="reward-amount-text" id="popupAmount">+50 Coins</div>
+            <p class="reward-desc">You have successfully earned your reward.</p> 
+            <button class="btn-claim-modal" id="modalClaimBtn">OK, Great!</button>
+        </div>
+    </div>
+    
+    <!-- STATUS MODAL -->
+    <div id="statusModal" class="modal-backdrop" style="z-index: 5000;">
+        <div class="reward-modal">
+            <div class="sparkle-bg"></div>
+            <div id="statusIconContainer"></div>
+            <h2 id="statusTitle" class="reward-title" style="color: #333;"></h2>
+            <p id="statusDesc" class="reward-desc"></p>
+            <button id="statusBtn" class="btn-claim-modal"></button>
+        </div>
+    </div>
+    
+    <!-- HISTORY MODAL -->
+    <div id="historyModal" class="modal-backdrop" onclick="if(event.target.id === 'historyModal') hideHistoryModal()">
+        <div class="history-content">
+            <i class="fas fa-times" style="position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 1.2rem; color: #aaa; z-index: 10;" onclick="hideHistoryModal()"></i>
+            <div id="historyModalIconContainer"><i class="fas fa-history fa-2x" style="color: #764ba2; margin-bottom: 15px;"></i></div>
+            <h2 class="reward-title">History</h2>
+            <div class="history-scroll-area"><div id="historyListContainer"></div></div>
+        </div>
+    </div>
+    
+    <!-- NEW: TOURNAMENT LIST MODAL (Slides up from bottom) -->
+    <div id="tournamentListModal" class="modal-backdrop" style="z-index: 3500;" onclick="if(event.target.id === 'tournamentListModal') hideTournamentListModal()">
+        <div class="history-content">
+            <i class="fas fa-times" style="position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 1.2rem; color: #aaa; z-index: 10;" onclick="hideTournamentListModal()"></i>
+            <div id="tournListModalIconContainer"><i class="fas fa-trophy fa-2x" style="color: #ffd700; margin-bottom: 15px;"></i></div>
+            <h2 class="reward-title" id="tournListModalTitle">Referrals Tournament List</h2>
+            <div id="tournListModalCountdown" style="font-size: 0.85rem; color: #764ba2; font-weight: 600; margin-bottom: 10px;">
+                <i class="fas fa-clock"></i> <span id="tournListTimerDisplay">...</span>
+            </div>
+            
+            <!-- NEW: Current User Summary Section (Injected by script.js) -->
+            <div id="currentUserTournamentSummary" style="background: #f0f5ff; border: 1px solid #cceeff; border-radius: 12px; padding: 10px; margin-bottom: 15px; display: none;">
+                <!-- Content injected by script.js -->
+            </div>
+            <!-- END NEW -->
+
+            <button class="watch-btn" style="width: 100%; margin-bottom: 15px; background: #3498db;" onclick="showRulesModal()">Tournament Rules <i class="fas fa-scroll"></i></button>
+            <div class="history-scroll-area">
+                <div id="tournamentLeaderboardList">
+                    <!-- Tournament List will be injected here -->
+                </div>
+            </div>
+            <!-- Join Button for quick access when not joined -->
+            <button class="btn-claim-modal" id="listModalJoinBtn" onclick="showJoinTournamentModal(true)" style="width: 100%; margin-top: 15px; display: none;">Join Tournament!</button>
+        </div>
+    </div>
+
+    <!-- NEW: JOIN TOURNAMENT MODAL -->
+    <div id="joinTournamentModal" class="modal-backdrop" onclick="if(event.target.id === 'joinTournamentModal') hideJoinTournamentModal()">
+        <div class="reward-modal">
+            <i class="fas fa-times" style="position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 1.2rem; color: #aaa; z-index: 10;" onclick="hideJoinTournamentModal()"></i>
+            <div class="sparkle-bg"></div>
+            <div id="joinModalIconContainer"><i class="fas fa-trophy" style="font-size:3rem; color:#ffd700; margin-bottom:15px; animation: bounce 2s infinite;"></i></div>
+            <h2 class="reward-title" id="joinModalTitle">Referrals Tournament</h2> 
+            <p class="reward-desc" id="joinModalDesc">Join the tournament to start counting your referrals for a chance to win a prize!</p> 
+            <button class="btn-claim-modal" id="joinTournamentRulesBtn" style="width: 80%; background: #3498db; margin-bottom: 10px;" onclick="showRulesModal()">Tournament Rules <i class="fas fa-scroll"></i></button>
+            <button class="btn-claim-modal" id="joinTournamentBtn" onclick="joinTournament()" style="width: 80%;">Join Tournament!</button>
+        </div>
+    </div>
+
+    <!-- NEW: RULES MODAL -->
+    <div id="rulesModal" class="modal-backdrop" style="z-index: 3500;" onclick="if(event.target.id === 'rulesModal') hideRulesModal()">
+        <div class="history-content">
+            <i class="fas fa-times" style="position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 1.2rem; color: #aaa; z-index: 10;" onclick="hideRulesModal()"></i>
+            <div id="rulesModalIconContainer"><i class="fas fa-scroll fa-2x" style="color: #3498db; margin-bottom: 15px;"></i></div>
+            <h2 class="reward-title">Tournament Rules</h2>
+            <div class="history-scroll-area">
+                <div id="tournamentRulesContent" style="text-align: left; font-size: 0.9rem; color: #555; line-height: 1.6;">
+                    Loading rules...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: PRIZE COLLECTION MODAL -->
+    <div id="prizeCollectModal" class="modal-backdrop" style="z-index: 5000;">
+        <div class="reward-modal">
+            <div class="sparkle-bg"></div>
+            <div id="prizeModalIconContainer"><i class="fas fa-trophy" style="font-size:3rem; color:#ffd700; margin-bottom:15px; animation: bounce 2s infinite;"></i></div>
+            <h2 class="reward-title" id="prizeModalTitle">Congratulations!</h2> 
+            <p class="reward-desc" id="prizeModalDesc">You finished in rank X and won Y coins!</p> 
+            <div class="reward-amount-text" id="prizePopupAmount">+X Coins</div>
+            <button class="btn-claim-modal" id="prizeCollectBtn">Collect Coins!</button>
+        </div>
+    </div>
+
+    <!-- FIREBASE SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+   <script src="script.js"></script>
+</body>
+</html>
